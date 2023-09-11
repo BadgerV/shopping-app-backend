@@ -49,7 +49,7 @@ router.post("/user/be-vendor", auth, async (req, res) => {
 });
 
 //allows users to update their profile
-router.patch("/user/patch", auth, async (req, res) => {
+router.post("/user/patch", auth, async (req, res) => {
   const { firstName, lastName, email, phoneNumber } = req.body;
   const user = req.user;
 
