@@ -43,6 +43,9 @@ const userSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     },
+    phoneNumber : {
+        type : String,
+    },
     products : [{
         product : {
             type : String,

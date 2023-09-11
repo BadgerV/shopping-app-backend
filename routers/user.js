@@ -48,6 +48,34 @@ router.post("/user/be-vendor", auth, async (req, res) => {
   ``;
 });
 
+//allows users to update their profile
+router.patch("/user/patch", auth, async (req, res) => {
+  const { firstName, lastName, email, phoneNumber } = req.body;
+  const user = req.user;
+
+  if (firstName) {
+    user.firstName = firstName;
+  }
+
+  if (lastName) {
+    user.lastName = lastName;
+  }
+
+  if (email) {
+    user.email = email;
+  }
+
+  if (phoneNumber) {
+    user.phoneNumber = phoneNumber;
+  }
+  try {
+    await user.save();
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 //allows users to logout
 router.post("/user/logout", auth, async (req, res) => {
   try {
@@ -58,7 +86,7 @@ router.post("/user/logout", auth, async (req, res) => {
     await req.user.save();
     res.send("You have logged out successfully");
   } catch (error) {
-    res.status(400).send(error)
+    res.status(400).send(error);
   }
 });
 module.exports = router;
