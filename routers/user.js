@@ -12,7 +12,7 @@ router.post("/user/signup", async (req, res) => {
 
     res.status(200).send({ newUser, token });
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send("An error occured");
   }
 });
 
@@ -26,7 +26,7 @@ router.post("/user/login", async (req, res) => {
     const token = await user.generateAuthToken();
     res.status(200).send({ user, token });
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send("An error occured");
   }
 });
 
@@ -89,4 +89,5 @@ router.post("/user/logout", auth, async (req, res) => {
     res.status(400).send(error);
   }
 });
+
 module.exports = router;

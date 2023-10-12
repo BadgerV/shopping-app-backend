@@ -11,6 +11,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     maxLength: 100,
   },
+  originalProductPrice: {
+    required: true,
+    type: Number,
+  },
   rating: {
     type: Number,
   },
@@ -23,6 +27,16 @@ const productSchema = new mongoose.Schema({
     type: Buffer,
     contentType: String,
 
+    required: true,
+  },
+  productDiscount: {
+    type: Number,
+  },
+  inStock: {
+    type: Boolean,
+  },
+  stock: {
+    type: Number,
     required: true,
   },
 });
