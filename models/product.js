@@ -6,6 +6,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     maxLength: 20,
   },
+  nameSearch: {
+    type: String,
+    required: true,
+  },
   description: {
     type: String,
     required: true,

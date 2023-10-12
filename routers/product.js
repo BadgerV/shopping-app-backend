@@ -4,7 +4,6 @@ const multer = require("multer");
 const sharp = require("sharp");
 
 const Product = require("../models/product.js");
-const { calculatePriceWithDiscount } = require("../utils/UtilityFunctions");
 
 const router = express.Router();
 
@@ -42,6 +41,7 @@ router.post(
       } = req.body;
 
       let inStock = false;
+      const nameSearch = name.toLowerCase();
 
       if (stock > 1) {
         inStock = true;
@@ -62,6 +62,7 @@ router.post(
 
       const newProduct = new Product({
         name,
+        nameSearch,
         description,
         productImage: buffer,
         owner,
@@ -189,7 +190,7 @@ router.post("/product/get-product", async (req, res) => {
   try {
     const { productName } = req.body;
 
-    const product = await Product.findOne({ name: productName });
+    const product = await Product.find({ nameSearch: productName }).exec();
 
     res.send(product);
   } catch (error) {
