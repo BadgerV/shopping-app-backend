@@ -1,118 +1,126 @@
-const  mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Product = require('./product')
+const Product = require("./product");
 
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Please provide an email");
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 7,
+      validate(value) {
+        if (value.toLowerCase().includes("password")) {
+          throw new Error("Password cannot include passord");
+        }
+      },
+    },
+    isVendor: {
+      type: Boolean,
+      default: false,
+    },
+    phoneNumber: {
+      type: String,
+    },
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product", // Reference to your Product model
+      },
+    ],
 
-const userSchema = new mongoose.Schema({
-    firstName : {
-        type : String,
-        required: true,
-        trim : true
-
+    avatar: {
+      type: Buffer,
     },
-    lastName : {
-        type : String,
-        required : true,
-        trim : true
-    },
-    email : {
-        type : String,
-        required : true,
-        unique : true,
-        trim : true,
-        lowercase : true,
-        validate(value) {
-            if(!validator.isEmail(value)) {
-                throw new Error("Please provide an email")
-            }
-        }
-    },
-    password : {
-        type : String,
-        required : true,
-        minlength: 7,
-        validate(value) {
-            if(value.toLowerCase().includes("password")) {
-                throw new Error("Password cannot include passord")
-            }
-        }
-    },
-    isVendor : {
-        type : Boolean,
-        default : false
-    },
-    phoneNumber : {
-        type : String,
-    },
-    products : [{
-        product : {
-            type : String,
-        }
-    }],
-    avatar : {
-        type : Buffer
-    },
-    tokens : [{
-        token : {
-            type : String,
-        }
-    }],
-}, {
-    timestamps : true
-})
+    tokens: [
+      {
+        token: {
+          type: String,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 userSchema.virtual("product", {
-    ref : Product,
-    localField : "_id",
-    foreignField : "owner"
-})
+  ref: Product,
+  localField: "_id",
+  foreignField: "owner",
+});
 
 //this is to compare the password with the already hashed passowrd
-userSchema.statics.findByCredentials = async function(password, email) {
-    const user = await User.findOne({email});
+userSchema.statics.findByCredentials = async function (password, email) {
+  const user = await User.findOne({ email });
 
-    if(!user) {
-        throw new Error('Failed to login')
-    }
+  if (!user) {
+    throw new Error("Failed to login");
+  }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
 
-    if(!isMatch) {
-        throw new Error("Failed to login")
-    }
+  if (!isMatch) {
+    throw new Error("Failed to login");
+  }
 
-    return user
-}
-
+  return user;
+};
 
 //this is to generate auth tokens for the usrs for authentication
-userSchema.methods.generateAuthToken = async function() {
-    user = this;
-    const secret = process.env.SECERT;
+userSchema.methods.generateAuthToken = async function () {
+  user = this;
+  const secret = process.env.SECERT;
 
-    const token = jwt.sign({_id : user._id.toString()}, "thisisjustthebeginnigofgreateness", {
-        expiresIn : "1d"
-    });
+  const token = jwt.sign(
+    { _id: user._id.toString() },
+    "thisisjustthebeginnigofgreateness",
+    {
+      expiresIn: "1d",
+    }
+  );
 
-    user.tokens = user.tokens.concat({token});
+  user.tokens = user.tokens.concat({ token });
 
-    await user.save();
+  await user.save();
 
-    return token;
-}
+  return token;
+};
 
 //this is to has the password before signup or before the password is cahnged
-userSchema.pre('save', async function(next) {
-    user = this;
+userSchema.pre("save", async function (next) {
+  user = this;
 
-    if(user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8);
-    }
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
 
-    next()
-})
-const User = mongoose.model('User', userSchema);
+  next();
+});
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

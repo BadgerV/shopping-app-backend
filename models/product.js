@@ -11,6 +11,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     maxLength: 100,
   },
+  price: {
+    type: Number,
+    required: true,
+  },
   originalProductPrice: {
     required: true,
     type: Number,
@@ -38,6 +42,10 @@ const productSchema = new mongoose.Schema({
   stock: {
     type: Number,
     required: true,
+  },
+  shippingCost: {
+    required: true,
+    type: Number,
   },
 });
 
