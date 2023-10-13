@@ -62,7 +62,25 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    matricNumber: {
+      type: String,
+      maxLength: 8,
+      trim: true,
+      unique: true,
+    },
+    DOB: {
+      type: String,
+      trim: true,
+    },
+    gender: {
+      type: String,
+      trim: true,
+    },
+    department: {
+      type: String,
+    },
   },
+
   {
     timestamps: true,
   }
@@ -97,6 +115,28 @@ userSchema.statics.findByCredentials = async function (password, email) {
   }
 
   return user;
+};
+
+//this is to compare password provided by the user when there is about to be a change in passwords
+userSchema.statics.compareAndChangePasswords = async function (
+  email,
+  password,
+  newPassword
+) {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User does not exist!");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (isMatch) {
+    user.password = await bcrypt.hash(newPassword, 8);
+    await user.save();
+    return user;
+  } else {
+    throw new error("Cannot change password")
+  }
 };
 
 //this is to generate auth tokens for the usrs for authentication

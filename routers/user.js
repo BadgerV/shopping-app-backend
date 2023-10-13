@@ -3,6 +3,9 @@ const User = require("../models/user");
 const auth = require("../middleware/auth");
 const router = express.Router();
 
+const multer = require("multer");
+const sharp = require("sharp");
+
 //signup code
 router.post("/user/signup", async (req, res) => {
   const newUser = new User(req.body);
@@ -34,23 +37,56 @@ router.post("/user/login", async (req, res) => {
 router.get("/user/me", auth, async (req, res) => {
   res.send(req.user);
 });
+const upload = multer({
+  limits: {
+    fileSize: 10000000,
+  },
+  fileFilter(req, res, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Please upload an image"));
+    }
+
+    cb(undefined, true);
+  },
+});
 
 //allows users to become vendors
-router.post("/user/be-vendor", auth, async (req, res) => {
-  try {
-    req.user.isVendor = true;
+router.post(
+  "/user/be-vendor",
+  auth,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      const buffer = await sharp(req.file.buffer)
+        .resize({ width: 250, height: 250 })
+        .png()
+        .toBuffer();
+      const { matricNumber, DOB, gender, motto, department } = req.body;
 
-    await req.user.save();
-    res.status(200).send(req.user);
-  } catch (error) {
-    res.status(400).send(error);
+      if ((!matricNumber || !DOB, !gender || !motto || !department)) {
+        res.status(400).send("Please input all fields");
+      }
+
+      req.user.matricNumber = matricNumber;
+      req.user.DOB = DOB;
+      req.user.gender = gender;
+      req.user.motto = motto;
+      req.user.avatar = buffer;
+
+      req.user.isVendor = true;
+
+      await req.user.save();
+      res.status(200).send(req.user);
+    } catch (error) {
+      res.status(400).send(error);
+    }
   }
-  ``;
-});
+);
 
 //allows users to update their profile
 router.post("/user/patch", auth, async (req, res) => {
-  const { firstName, lastName, email, phoneNumber } = req.body;
+  const { firstName, lastName, email, phoneNumber, password, newPassword } =
+    req.body;
   const user = req.user;
 
   if (firstName) {
@@ -68,11 +104,20 @@ router.post("/user/patch", auth, async (req, res) => {
   if (phoneNumber) {
     user.phoneNumber = phoneNumber;
   }
+
   try {
+    if (password && newPassword) {
+      const user = await User.compareAndChangePasswords(
+        email,
+        password,
+        newPassword
+      );
+    }
     await user.save();
+
     res.status(200).send(user);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send("An error occured");
   }
 });
 
