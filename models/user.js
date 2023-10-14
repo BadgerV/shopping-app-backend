@@ -131,9 +131,9 @@ userSchema.statics.compareAndChangePasswords = async function (
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (isMatch) {
-    user.password = await bcrypt.hash(newPassword, 8);
+    user.password = newPassword;
+    console.log(user.password)
     await user.save();
-    return user;
   } else {
     throw new error("Cannot change password")
   }
