@@ -39,9 +39,9 @@ router.get("/user/me", auth, async (req, res) => {
 });
 const upload = multer({
   limits: {
-    fileSize: 10000000,
+    fileSize: 1000000000,
   },
-  fileFilter(req, res, cb) {
+  fileFilter(req, file, cb) {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
       return cb(new Error("Please upload an image"));
     }
@@ -63,18 +63,22 @@ router.post(
         .toBuffer();
       const { matricNumber, DOB, gender, motto, department } = req.body;
 
-      if ((!matricNumber || !DOB, !gender || !motto || !department)) {
-        res.status(400).send("Please input all fields");
-      }
+      // if (
+      //   (!matricNumber || !DOB, !gender || !motto || !department || !buffer)
+      // ) {
+      //   res.status(400).send("Please input all fields");
+      // }
+
+      console.log(gender);
 
       req.user.matricNumber = matricNumber;
-      req.user.DOB = DOB;
+      req.user.DOB = new Date(DOB);
       req.user.gender = gender;
       req.user.motto = motto;
+      req.user.department = department;
       req.user.avatar = buffer;
-
-      req.user.isVendor = true;
-
+      req.user.isVendor = "pending";
+      
       await req.user.save();
       res.status(200).send(req.user);
     } catch (error) {

@@ -1,90 +1,9 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Product = require("./product");
+const { userSchema } = require("./userSchema");
 
-const userSchema = new mongoose.Schema(
-  {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      validate(value) {
-        if (!validator.isEmail(value)) {
-          throw new Error("Please provide an email");
-        }
-      },
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 7,
-      validate(value) {
-        if (value.toLowerCase().includes("password")) {
-          throw new Error("Password cannot include passord");
-        }
-      },
-    },
-    isVendor: {
-      type: Boolean,
-      default: false,
-    },
-    phoneNumber: {
-      type: String,
-    },
-    products: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product", // Reference to your Product model
-      },
-    ],
-
-    avatar: {
-      type: Buffer,
-    },
-    tokens: [
-      {
-        token: {
-          type: String,
-        },
-      },
-    ],
-    matricNumber: {
-      type: String,
-      maxLength: 8,
-      trim: true,
-      unique: true,
-    },
-    DOB: {
-      type: String,
-      trim: true,
-    },
-    gender: {
-      type: String,
-      trim: true,
-    },
-    department: {
-      type: String,
-    },
-  },
-
-  {
-    timestamps: true,
-  }
-);
 userSchema.methods.toJSON = function () {
   const user = this;
   const userObject = user.toObject();
@@ -132,10 +51,10 @@ userSchema.statics.compareAndChangePasswords = async function (
   const isMatch = await bcrypt.compare(password, user.password);
   if (isMatch) {
     user.password = newPassword;
-    console.log(user.password)
+    console.log(user.password);
     await user.save();
   } else {
-    throw new error("Cannot change password")
+    throw new error("Cannot change password");
   }
 };
 
