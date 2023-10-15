@@ -61,7 +61,16 @@ router.post(
         .resize({ width: 250, height: 250 })
         .png()
         .toBuffer();
-      const { matricNumber, DOB, gender, motto, department } = req.body;
+      const {
+        matricNumber,
+        DOB,
+        gender,
+        motto,
+        department,
+        firstCategory,
+        secondCategory,
+        thirdCategory,
+      } = req.body;
 
       // if (
       //   (!matricNumber || !DOB, !gender || !motto || !department || !buffer)
@@ -69,7 +78,17 @@ router.post(
       //   res.status(400).send("Please input all fields");
       // }
 
-      console.log(gender);
+      if (firstCategory !== "") {
+        req.user.categoriesToBeSold.push(firstCategory);
+      }
+
+      if (secondCategory !== "") {
+        req.user.categoriesToBeSold.push(secondCategory);
+      }
+
+      if (thirdCategory !== "") {
+        req.user.categoriesToBeSold.push(thirdCategory);
+      }
 
       req.user.matricNumber = matricNumber;
       req.user.DOB = new Date(DOB);
@@ -78,7 +97,7 @@ router.post(
       req.user.department = department;
       req.user.avatar = buffer;
       req.user.isVendor = "pending";
-      
+
       await req.user.save();
       res.status(200).send(req.user);
     } catch (error) {
