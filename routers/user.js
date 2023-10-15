@@ -61,6 +61,8 @@ router.post(
         .resize({ width: 250, height: 250 })
         .png()
         .toBuffer();
+
+      console.log(req.file);
       const {
         matricNumber,
         DOB,
@@ -72,11 +74,11 @@ router.post(
         thirdCategory,
       } = req.body;
 
-      // if (
-      //   (!matricNumber || !DOB, !gender || !motto || !department || !buffer)
-      // ) {
-      //   res.status(400).send("Please input all fields");
-      // }
+      if (
+        (!matricNumber || !DOB || !gender || !motto || !department || !buffer)
+      ) {
+        res.status(400).send("Please input all fields");
+      }
 
       if (firstCategory !== "") {
         req.user.categoriesToBeSold.push(firstCategory);
