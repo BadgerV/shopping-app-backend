@@ -19,4 +19,6 @@ function calculatePriceWithoutDiscount(originalProductPrice, shippingCost) {
   return totalPrice;
 }
 
+
+
 module.exports = { calculatePriceWithDiscount, calculatePriceWithoutDiscount };

@@ -38,6 +38,8 @@ router.post(
         stock,
         productDiscount,
         shippingCost,
+        category1,
+        category2,
       } = req.body;
 
       let inStock = false;
@@ -62,9 +64,9 @@ router.post(
 
       const newProduct = new Product({
         name,
-        nameSearch,
         description,
         productImage: buffer,
+        nameSearch,
         owner,
         originalProductPrice,
         stock,
@@ -74,6 +76,13 @@ router.post(
         price: totalPrice,
       });
 
+      if (!category1) {
+        res.status(400).send("Please select at least one category");
+      }
+
+      category1 && newProduct.productCategories.push(category1);
+      category2 && newProduct.productCategories.push(category2);
+
       await newProduct.save();
 
       req.user.products.push(newProduct._id);
@@ -82,10 +91,29 @@ router.post(
 
       res.status(200).send(newProduct);
     } catch (error) {
-      res.status(400).send("An error occured");
+      res.status(400).json({ "An error occured": error });
     }
   }
 );
+
+router.get("/product/get-random-products", async (req, res) => {
+  try {
+    // Number of random items to fetch
+    const numRandomItems = 10; // Adjust as needed
+
+    // Use the aggregate framework to fetch random items and limit the results
+    const randomProducts = await Product.aggregate([
+      { $sample: { size: numRandomItems } },
+      { $limit: numRandomItems },
+    ]).exec();
+
+    // Send the random products as a response
+    res.status(200).json({ randomProducts });
+  } catch (error) {
+    console.error("Error querying random products:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.post("/product/successfull-transaction/:id", auth, async (req, res) => {
   try {
@@ -195,6 +223,42 @@ router.post("/product/get-product", async (req, res) => {
     res.send(product);
   } catch (error) {
     res.status(400).send("An error occured");
+  }
+});
+
+router.get("/product/get-product-categories", async (req, res) => {
+  try {
+    res
+      .status(200)
+      .send([
+        "Textbooks",
+        "Laptops",
+        "Smartphones",
+        "Clothing",
+        "Furniture",
+        "Appliances",
+        "Bicycles",
+        "Stationery",
+        "Instruments",
+        "Sports",
+        "Electronics",
+        "Decor",
+        "Supplies",
+        "Gaming",
+        "Games",
+        "Shoes",
+        "Essentials",
+        "Fitness",
+        "Toiletries",
+        "Tickets",
+        "Backpacks",
+        "Cookware",
+        "Housing",
+        "Aids",
+        "Transport",
+      ]);
+  } catch (error) {
+    res.status(400).json({ error: error });
   }
 });
 

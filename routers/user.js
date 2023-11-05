@@ -62,7 +62,6 @@ router.post(
         .png()
         .toBuffer();
 
-      console.log(req.file);
       const {
         matricNumber,
         DOB,
