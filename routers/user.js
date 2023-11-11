@@ -15,7 +15,7 @@ router.post("/user/signup", async (req, res) => {
 
     res.status(200).send({ newUser, token });
   } catch (e) {
-    res.status(400).send("An error occured");
+    res.status(400).send(e);
   }
 });
 
@@ -37,6 +37,8 @@ router.post("/user/login", async (req, res) => {
 router.get("/user/me", auth, async (req, res) => {
   res.send(req.user);
 });
+
+//multer code
 const upload = multer({
   limits: {
     fileSize: 1000000000,
@@ -74,7 +76,12 @@ router.post(
       } = req.body;
 
       if (
-        (!matricNumber || !DOB || !gender || !motto || !department || !buffer)
+        !matricNumber ||
+        !DOB ||
+        !gender ||
+        !motto ||
+        !department ||
+        !buffer
       ) {
         res.status(400).send("Please input all fields");
       }
@@ -156,6 +163,16 @@ router.post("/user/logout", auth, async (req, res) => {
     res.send("You have logged out successfully");
   } catch (error) {
     res.status(400).send(error);
+  }
+});
+//allows users to search for oter users or vendors and access their page sha
+router.get("/user/get-user/:id", async (req, res) => {
+  try {
+    const foundUser = await User.findOne({ _id: req.params.id });
+
+    res.status(200).send(foundUser);
+  } catch (error) {
+    res.status(400).json(`error : There was an error`);
   }
 });
 
