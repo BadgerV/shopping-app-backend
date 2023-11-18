@@ -1,9 +1,9 @@
-const express = require("express");
-const auth = require("../middleware/auth");
-const multer = require("multer");
-const sharp = require("sharp");
+import express from "express";
+import auth from "../middleware/auth.js";
+import multer from "multer";
+import sharp from "sharp";
 
-const Product = require("../models/product.js");
+import Product from "../models/product.js";
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ const upload = multer({
 });
 
 router.post(
-  "/product/post-product",
+  "/post-product",
   auth,
   upload.single("productImage"),
   async (req, res) => {
@@ -96,7 +96,7 @@ router.post(
   }
 );
 
-router.get("/product/get-random-products", async (req, res) => {
+router.get("/get-random-products", async (req, res) => {
   try {
     // Number of random items to fetch
     const numRandomItems = 10; // Adjust as needed
@@ -115,7 +115,7 @@ router.get("/product/get-random-products", async (req, res) => {
   }
 });
 
-router.post("/product/successfull-transaction/:id", auth, async (req, res) => {
+router.post("/successfull-transaction/:id", auth, async (req, res) => {
   try {
     const productID = req.params.id;
 
@@ -150,7 +150,7 @@ router.post("/product/successfull-transaction/:id", auth, async (req, res) => {
   }
 });
 
-router.post("/product/edit-product-number/:id", auth, async (req, res) => {
+router.post("/edit-product-number/:id", auth, async (req, res) => {
   try {
     const productID = req.params.id;
 
@@ -189,7 +189,7 @@ router.post("/product/edit-product-number/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/product/delete-product/:id", auth, async (req, res) => {
+router.delete("/delete-product/:id", auth, async (req, res) => {
   try {
     const productID = req.params.id;
 
@@ -214,7 +214,7 @@ router.delete("/product/delete-product/:id", auth, async (req, res) => {
   }
 });
 
-router.post("/product/get-product", async (req, res) => {
+router.post("/get-product", async (req, res) => {
   try {
     const { productName } = req.body;
 
@@ -226,7 +226,7 @@ router.post("/product/get-product", async (req, res) => {
   }
 });
 
-router.get("/product/get-product-categories", async (req, res) => {
+router.get("/get-product-categories", async (req, res) => {
   try {
     res
       .status(200)
@@ -262,4 +262,25 @@ router.get("/product/get-product-categories", async (req, res) => {
   }
 });
 
-module.exports = router;
+function returnLetters(category) {
+  let categoryRevamped =
+    category[0].toUpperCase() + category.slice(1).toLowerCase();
+  return categoryRevamped;
+}
+
+router.get("/get-categories-product/:category", async (req, res) => {
+  try {
+    const theCategory = returnLetters(req.params.category);
+
+    // Search for products with the specified category (case-insensitive)
+    const result = await Product.find({
+      productCategories: theCategory,
+    }).exec();
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+});
+
+export default router;

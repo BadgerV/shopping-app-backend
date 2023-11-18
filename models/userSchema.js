@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
+import mongoose from "mongoose";
+import validator from "validator";
 
 const userSchema = new mongoose.Schema(
   {
@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum : ["male", "female"],
+      enum: ["male", "female"],
       trim: true,
     },
     department: {
@@ -90,4 +90,4 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-exports.userSchema = userSchema;
+export default userSchema;
