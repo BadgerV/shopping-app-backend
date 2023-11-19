@@ -4,6 +4,7 @@ import multer from "multer";
 import sharp from "sharp";
 
 import Product from "../models/product.js";
+import User from "../models/user.js";
 
 const router = express.Router();
 
@@ -105,7 +106,29 @@ router.get("/get-random-products", async (req, res) => {
     const randomProducts = await Product.aggregate([
       { $sample: { size: numRandomItems } },
       { $limit: numRandomItems },
+      {
+        $project: {
+          productImage: 0, // Exclude the "productImage" property
+        },
+      },
     ]).exec();
+
+    // const newArray = [];
+
+    // function removePropertyAndPush(array, newArray) {
+    //   for (const object of array) {
+    //     const newObject = {};
+    //     for (const key in object) {
+    //       if (key !== "productImage") {
+    //         console.log(key)
+    //         newObject[key] = object[key];
+    //       }
+    //     }
+    //     newArray.push(newObject);
+    //   }
+    // }
+
+    // removePropertyAndPush(randomProducts, newArray);
 
     // Send the random products as a response
     res.status(200).json({ randomProducts });
@@ -226,6 +249,18 @@ router.post("/get-product", async (req, res) => {
   }
 });
 
+router.get("/get-product/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const product = await Product.find({ _id: id }).exec();
+
+    res.send(product);
+  } catch (error) {
+    res.status(400).send("An error occured");
+  }
+});
+
 router.get("/get-product-categories", async (req, res) => {
   try {
     res
@@ -275,11 +310,46 @@ router.get("/get-categories-product/:category", async (req, res) => {
     // Search for products with the specified category (case-insensitive)
     const result = await Product.find({
       productCategories: theCategory,
-    }).exec();
+    })
+      .select("-productImage")
+      .exec();
 
     res.send(result);
   } catch (error) {
     console.error("Error:", error);
+  }
+});
+
+router.get("/search/:name", async (req, res) => {
+  const searchQuery = req.params.name;
+
+  try {
+    const productSuggestions = await Product.find({
+      name: { $regex: searchQuery, $options: "i" },
+    })
+      .select("-productImage")
+      .exec();
+
+    const userSuggestions = await User.find({
+      firstName: { $regex: searchQuery, $options: "i" },
+      isVendor: "true",
+    })
+      .select("-avatar -products")
+      .exec();
+    const userSuggestions1 = await User.find({
+      lastName: { $regex: searchQuery, $options: "i" },
+      isVendor: "true",
+    })
+      .select("-avatar -products")
+      .exec();
+
+    const suggestions = productSuggestions
+      .concat(userSuggestions)
+      .concat(userSuggestions1);
+
+    res.status(200).send(suggestions);
+  } catch (error) {
+    res.status(400).json({ error });
   }
 });
 
