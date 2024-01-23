@@ -118,19 +118,24 @@ router.post(
 //ROUTER RESPONSIBLE FOR GETTING RANDOM PRODUCTS
 router.get("/get-random-products", async (req, res) => {
   try {
-    // CHECKS THE PARAMS FOR PROPERTY OR SET IT TO 10
-    const numRandomItems = req.params.noOfProducts || 10;
+    // CHECK QUERY PARAMS FOR PROPERTY OR SET IT TO 10
+    const numRandomItems = parseInt(req.query.noOfProducts) || 10;
 
-    // Use the aggregate framework to fetch random items and limit the results
-    const randomProducts = await Product.aggregate([
+    // Use the aggregate framework to fetch random items and populate owner
+    const randomProd = await Product.aggregate([
       { $sample: { size: numRandomItems } },
-      { $limit: numRandomItems },
-      // {
-      //   $project: {
-      //     // productImage: 0, // Exclude the "productImage" property
-      //   },
-      // },
+      {
+        $project: {
+          productImage: 0, // Exclude the "productImage" property
+        },
+      },
     ]).exec();
+
+    const randomProducts = await User.populate(randomProd, {
+      path: "owner",
+      select: "-avatar", // Exclude the "avatar" field
+    });
+
     // Send the random products as a response
     res.status(200).json({ randomProducts });
   } catch (error) {
@@ -315,12 +320,13 @@ router.get("/get-categories-product/:category", async (req, res) => {
       productCategories: { $regex: new RegExp(categpry, "i") },
     })
       .select("-productImage")
+      .populate("owner")
       .exec();
 
     res.send(result);
   } catch (e) {
     res.status(400).json({ error: e });
-    console.error("Error:", error);
+    console.error("Error:", e);
   }
 });
 
