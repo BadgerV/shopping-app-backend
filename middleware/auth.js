@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
+//AUTH MIDDLEWARE
+
 const auth = async (req, res, next) => {
   const secret = process.env.SECERT;
 
